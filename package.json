@@ -1,0 +1,31 @@
+{
+  "name": "microsoftpaintproject",
+  "version": "1.0.0",
+  "description": "Automates Microsoft Paint to create pictures\"",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LionelBergen/MicrosoftPaintProject.git"
+  },
+  "keywords": [
+    "microsoftpaint",
+    "microsoft",
+    "ms",
+    "paint",
+    "automation",
+    "robot",
+    "node",
+    "robotjs",
+    "images",
+    "image-processing"
+  ],
+  "author": "Lionel Bergen",
+  "license": "UNLICENSED",
+  "bugs": {
+    "url": "https://github.com/LionelBergen/MicrosoftPaintProject/issues"
+  },
+  "homepage": "https://github.com/LionelBergen/MicrosoftPaintProject#readme"
+}
