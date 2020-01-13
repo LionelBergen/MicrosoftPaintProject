@@ -15,12 +15,30 @@ public class Colour {
 		this.color = new Color(red, green, blue);
 	}
 	
+	public Colour(Color color) {
+		this.color = color;
+	}
+	
 	public int getRed() {
 		return this.color.getRed();
 	}
 	
-	public boolean similairTo(Colour colour) {
-		return false;
+	public int getGreen() {
+		return this.color.getGreen();
+	}
+	
+	public int getBlue() {
+		return this.color.getBlue();
+	}
+	
+	public boolean similairTo(Colour colour, double maxDistance) {
+		double distance = (colour.getRed() - this.getRed()) * (colour.getRed() - this.getRed()) 
+				+ (colour.getGreen() - this.getGreen()) * (colour.getGreen() - this.getGreen()) 
+				+ (colour.getBlue() - this.getBlue()) * (colour.getBlue() - this.getBlue());
+		
+		System.out.println(distance);
+    
+		return distance <= maxDistance;
 	}
 	
 	@Override

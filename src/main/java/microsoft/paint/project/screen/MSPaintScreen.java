@@ -4,6 +4,7 @@ import java.awt.Robot;
 import java.util.Arrays;
 import java.util.List;
 
+import microsoft.paint.project.component.Colour;
 import microsoft.paint.project.component.ColourCoordinate;
 
 public class MSPaintScreen {
@@ -34,7 +35,7 @@ public class MSPaintScreen {
 	
 	public static boolean isMSPaintOpen(Robot robot) {
 		for (ColourCoordinate colourCoord : PALLET) {
-			if (!robot.getPixelColor(colourCoord.getX(), colourCoord.getY()).equals(colourCoord.getColour())) {
+			if (!new Colour(robot.getPixelColor(colourCoord.getX(), colourCoord.getY())).equals(colourCoord.getColour())) {
 				return false;
 			}
 		}

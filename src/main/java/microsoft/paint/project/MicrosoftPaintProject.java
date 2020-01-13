@@ -3,10 +3,14 @@ package microsoft.paint.project;
 import java.awt.Robot;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import javax.imageio.ImageIO;
 
+import microsoft.paint.project.component.Colour;
+import microsoft.paint.project.image.processor.ImageProcessor;
 import microsoft.paint.project.screen.MSPaintScreen;
 
 public class MicrosoftPaintProject {
@@ -21,16 +25,20 @@ public class MicrosoftPaintProject {
 		}
 		
 		File testFile = new File("C:\\Users\\Lionel\\Desktop\\redditstuff\\MicrosoftPaintProject\\stuff\\testimage.jpg");
-		System.out.println(testFile);
 		BufferedImage testImage = ImageIO.read(testFile);
-
-		// Getting pixel color by position x and y 
-		int clr =  testImage.getRGB(0, 0); 
-		int red   = (clr & 0x00ff0000) >> 16;
-		int green = (clr & 0x0000ff00) >> 8;
-		int blue  =  clr & 0x000000ff;
-		System.out.println("Red Color value = "+ red);
-		System.out.println("Green Color value = "+ green);
-		System.out.println("Blue Color value = "+ blue);
+		
+		System.out.println("Image width: " + testImage.getWidth());
+		System.out.println("Image height: " + testImage.getHeight());
+		
+		long startTime = System.currentTimeMillis();
+		Set<Colour> colourCoords = new HashSet<Colour>();
+		for(int x=0; x<testImage.getWidth(); x++) {
+			for (int y=0; y<testImage.getHeight(); y++) {
+				colourCoords.add(ImageProcessor.GetColourFromImage(testImage, x, y));
+			}
+		}
+		
+		System.out.println(colourCoords.size());
+		System.out.println("Took: " + (System.currentTimeMillis() - startTime) + " milliseconds"); 
 	}
 }
