@@ -1,19 +1,19 @@
 package microsoft.paint.project.screen;
 
-import java.awt.Color;
+import microsoft.paint.project.Colour;
 
 public class ColourCoordinate {
-	private final Color colour;
+	private final Colour colour;
 	private final int x;
 	private final int y;
 
 	public ColourCoordinate(int red, int green, int blue, int x, int y) {
-		this.colour = new Color(red, green, blue);
+		this.colour = new Colour(red, green, blue);
 		this.x = x;
 		this.y = y;
 	}
 	
-	public Color getColour() {
+	public Colour getColour() {
 		return this.colour;
 	}
 	
