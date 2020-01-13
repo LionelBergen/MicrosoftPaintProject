@@ -1,4 +1,4 @@
-package microsoft.paint.project;
+package microsoft.paint.project.component;
 
 import java.awt.Color;
 

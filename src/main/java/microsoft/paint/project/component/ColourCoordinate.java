@@ -1,6 +1,4 @@
-package microsoft.paint.project.screen;
-
-import microsoft.paint.project.Colour;
+package microsoft.paint.project.component;
 
 public class ColourCoordinate {
 	private final Colour colour;

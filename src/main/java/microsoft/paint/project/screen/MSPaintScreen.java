@@ -4,6 +4,8 @@ import java.awt.Robot;
 import java.util.Arrays;
 import java.util.List;
 
+import microsoft.paint.project.component.ColourCoordinate;
+
 public class MSPaintScreen {
 	private static final List<ColourCoordinate> PALLET = Arrays.asList(
 			new ColourCoordinate(0, 0, 0, 728, 57),
