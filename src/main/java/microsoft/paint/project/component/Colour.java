@@ -9,6 +9,7 @@ import java.awt.Color;
  * @author Lionel Bergen
  */
 public class Colour {
+	private static final double MAX_DISTANCE = 500.0;
 	private final Color color;
 	
 	public Colour(int red, int green, int blue) {
@@ -31,12 +32,14 @@ public class Colour {
 		return this.color.getBlue();
 	}
 	
+	public boolean similairTo(Colour colour) {
+		return similairTo(colour, MAX_DISTANCE);
+	}
+	
 	public boolean similairTo(Colour colour, double maxDistance) {
 		double distance = (colour.getRed() - this.getRed()) * (colour.getRed() - this.getRed()) 
 				+ (colour.getGreen() - this.getGreen()) * (colour.getGreen() - this.getGreen()) 
 				+ (colour.getBlue() - this.getBlue()) * (colour.getBlue() - this.getBlue());
-		
-		System.out.println(distance);
     
 		return distance <= maxDistance;
 	}

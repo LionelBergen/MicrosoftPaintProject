@@ -10,13 +10,24 @@ public class ColourTest {
 	private static final Colour WHITE = new Colour(255, 255, 255);
 	
 	private static final Colour WHITE_1 = new Colour(250, 242, 242);
+	private static final Colour WHITE_2 = new Colour(236, 234, 234);
 	
 	@Test
-	public void testSimilairTo() {
-		Colour blackColour = new Colour(0, 0, 0);
+	public void testSimilairToTrue() {
+		assertTrue(WHITE.similairTo(WHITE_1));
+		assertTrue(WHITE_1.similairTo(WHITE));
 		
-		assertFalse(WHITE.similairTo(WHITE_1, 0));
-		assertFalse(WHITE_1.similairTo(WHITE, 0));
+		assertTrue(WHITE_2.similairTo(WHITE_1));
+		assertTrue(WHITE_1.similairTo(WHITE_2));
+	}
+	
+	@Test
+	public void testSimilairToFalse() {
+		assertFalse(BLACK.similairTo(WHITE));
+		assertFalse(WHITE.similairTo(BLACK));
+
+		assertFalse(WHITE.similairTo(WHITE_2));
+		assertFalse(WHITE_2.similairTo(WHITE));
 	}
 	
 	@Test
