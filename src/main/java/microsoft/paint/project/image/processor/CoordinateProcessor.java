@@ -1,6 +1,8 @@
 package microsoft.paint.project.image.processor;
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -54,5 +56,20 @@ public class CoordinateProcessor {
 		}
 		
 		return processedCoords;
+	}
+	
+	public static Set<ColourCoordinate> getTopSide(Collection<ColourCoordinate> colourCoords) {
+		Set<ColourCoordinate> results = new HashSet<>();
+		final int leftMostX = colourCoords.stream().mapToInt(v -> v.getX()).min().getAsInt();
+		final int rightMostX = colourCoords.stream().mapToInt(v -> v.getX()).max().getAsInt();
+		
+		for (int i = leftMostX; i <= rightMostX; i++) {
+			final int x = i;
+			ColourCoordinate result = colourCoords.stream().filter(e -> e.getX() == x).min(Comparator.comparing(ColourCoordinate::getY)).get();
+
+			results.add(result);
+		}
+		
+		return results;
 	}
 }

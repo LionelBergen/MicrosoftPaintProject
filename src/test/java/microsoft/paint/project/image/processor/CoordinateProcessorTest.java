@@ -86,4 +86,25 @@ public class CoordinateProcessorTest {
 		assertFalse(CoordinateProcessor.isTouching(a, b));
 		assertFalse(CoordinateProcessor.isTouching(b, a));
 	}
+	
+	@Test
+	public void testGetTopSide() {
+		List<ColourCoordinate> testCoords = new ArrayList<>();
+		testCoords.add(new ColourCoordinate(0, 0, 0, 5, 5));
+		testCoords.add(new ColourCoordinate(0, 0, 0, 6, 8));
+		testCoords.add(new ColourCoordinate(0, 0, 0, 7, 15));
+		testCoords.add(new ColourCoordinate(0, 0, 0, 8, 0));
+		testCoords.add(new ColourCoordinate(0, 0, 0, 5, 6));
+		testCoords.add(new ColourCoordinate(0, 0, 0, 5, 7));
+		testCoords.add(new ColourCoordinate(0, 0, 0, 5, 8));
+		testCoords.add(new ColourCoordinate(0, 0, 0, 8, 5));
+		
+		Set<ColourCoordinate> results = CoordinateProcessor.getTopSide(testCoords);
+		assertEquals(4, results.size());
+		
+		assertEquals(5, results.stream().filter(e -> e.getX() == 5).findAny().get().getY());
+		assertEquals(8, results.stream().filter(e -> e.getX() == 6).findAny().get().getY());
+		assertEquals(15, results.stream().filter(e -> e.getX() == 7).findAny().get().getY());
+		assertEquals(0, results.stream().filter(e -> e.getX() == 8).findAny().get().getY());
+	}
 }
