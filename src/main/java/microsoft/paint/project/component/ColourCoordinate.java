@@ -1,12 +1,16 @@
 package microsoft.paint.project.component;
 
 public class ColourCoordinate {
-	private final Colour colour;
-	private final int x;
-	private final int y;
+	private Colour colour;
+	private int x;
+	private int y;
 
 	public ColourCoordinate(int red, int green, int blue, int x, int y) {
-		this.colour = new Colour(red, green, blue);
+		this(new Colour(red, green, blue), x, y);
+	}
+	
+	public ColourCoordinate(Colour colour, int x, int y) {
+		this.colour = colour;
 		this.x = x;
 		this.y = y;
 	}
@@ -15,12 +19,24 @@ public class ColourCoordinate {
 		return this.colour;
 	}
 	
+	public void setColour(Colour colour) {
+		this.colour = colour;
+	}
+	
 	public int getX() {
 		return this.x;
 	}
 	
+	public void setX(int x) {
+		this.x = x;
+	}
+	
 	public int getY() {
 		return this.y;
+	}
+	
+	public void setY(int y) {
+		this.y = y;
 	}
 	
 	@Override

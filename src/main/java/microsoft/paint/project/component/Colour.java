@@ -55,4 +55,9 @@ public class Colour {
 		
 		return this.color.equals(((Colour)other).color);
 	}
+	
+	@Override
+	public String toString() {
+		return "Red: " + this.getRed() + " Green: " + this.getGreen() + " Blue: " + this.getBlue();
+	}
 }

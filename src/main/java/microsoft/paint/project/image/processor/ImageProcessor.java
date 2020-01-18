@@ -9,7 +9,7 @@ public class ImageProcessor {
 	
 	public static Colour GetColourFromImage(BufferedImage image, int x, int y) {
 		// Getting pixel color by position x and y 
-		int clr = image.getRGB(0, 0); 
+		int clr = image.getRGB(x, y); 
 		int red = (clr & 0x00ff0000) >> 16;
 		int green = (clr & 0x0000ff00) >> 8;
 		int blue =  clr & 0x000000ff;
