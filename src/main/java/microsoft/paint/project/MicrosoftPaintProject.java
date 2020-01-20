@@ -44,7 +44,7 @@ public class MicrosoftPaintProject {
 		System.out.println("Image width: " + testImage.getWidth());
 		System.out.println("Image height: " + testImage.getHeight());
 		
-		//enterPaintScreenSize(robot, testImage.getWidth(), testImage.getHeight());
+		enterPaintScreenSize(robot, testImage.getWidth(), testImage.getHeight());
 		
 		// Get all colours from the image
 		Set<ColourCoordinate> colourCoords = new HashSet<ColourCoordinate>();
@@ -110,14 +110,24 @@ public class MicrosoftPaintProject {
 		
 		// remove it from our list since it's been painted
 		coloursWithCount.remove(firstColour);
+		
+		coloursFromSet = coloursWithCount.keySet().iterator();
 
 		// for each colour, draw it
 		while (coloursFromSet.hasNext()) {
+			final Colour colour = coloursFromSet.next();
+			drawColour(robot, colour, colourCoords);
 			
+			return;
 		}
 	}
 	
-	private void drawColour(Colour colourToDraw, Integer numberOfPixels, Set<ColourCoordinate> fullColourList) {
+	private static void drawColour(Autobot robot, Colour colourToDraw, Set<ColourCoordinate> fullColourList) {
+		// TODO: pencil
+		enterCustomColour(robot, colourToDraw);
+		robot.mouseClick(MSPaintScreen.getPencilButton());
+		robot.delay(50);
+		
 		// Get all Coordinates that match the colour:
 		Set<ColourCoordinate> colourCoords = fullColourList.stream().filter(e -> e.getColour().equals(colourToDraw)).collect(Collectors.toSet());
 		
@@ -126,7 +136,32 @@ public class MicrosoftPaintProject {
 		
 		// draw the outline of each & fill
 		for (Set<ColourCoordinate> coords : splitCoords) {
-			
+			int i = 0;
+			// top bottom left right
+			for (Collection<ColourCoordinate> side : CoordinateProcessor.getAllSides(coords)) {
+				side = CoordinateProcessor.removeMiddleCoordinates(side);
+				// TODO: remove this crappy debugging statement
+				switch(i) {
+				case 0:
+					System.out.println("drawing top");
+					break;
+				case 1:
+					System.out.println("drawing bottom");
+					break;
+				case 2:
+					System.out.println("drawing left");
+					break;
+				case 3:
+					System.out.println("drawing right");
+					break;
+				}
+				for (ColourCoordinate cc : side) {
+					robot.mouseClick(5 + cc.getX(), 143 + cc.getY());
+					robot.delay(50);
+				}
+				
+				i++;
+			}
 		}
 	}
 	

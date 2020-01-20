@@ -41,6 +41,10 @@ public class MSPaintScreenProperties {
 			new ColourCoordinate(240, 240, 240, 1398, 715),
 			new ColourCoordinate(225, 225, 225, 1329, 853)
 			);
+	// X: 232.0 Y: 70.0 java.awt.Color[r=134,g=130,b=117]
+	static final List<ColourCoordinate> PENCIL = Arrays.asList(
+			new ColourCoordinate(134, 130, 117, 232, 70)
+			);
 	
 	static final List<ColourCoordinate> PAINT_CAN = Arrays.asList(
 			new ColourCoordinate(232, 239, 247, 248, 65),

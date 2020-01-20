@@ -9,8 +9,6 @@ import java.awt.event.KeyEvent;
 import java.util.Arrays;
 import java.util.List;
 
-import microsoft.paint.project.screen.MSPaintScreen;
-
 /**
  * Wrapper for a java.awt.Robot class, with added features
  * @author Lionel Bergen
@@ -72,10 +70,14 @@ public class Autobot extends Robot {
 		mouseMove((int) point.getX(), (int) point.getY());
 	}
 	
-	public void mouseClick(Point point) {
-		mouseMove(point);
+	public void mouseClick(int x, int y) {
+		mouseMove(x, y);
 		delay(50);
 		mouseClick();
+	}
+	
+	public void mouseClick(Point point) {
+		mouseClick((int) point.getX(), (int) point.getY());
 	}
 	
 	public void mouseDoubleClick(Point point) {

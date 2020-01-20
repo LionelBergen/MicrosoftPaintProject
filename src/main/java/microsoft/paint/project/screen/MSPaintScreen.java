@@ -14,6 +14,7 @@ import static microsoft.paint.project.screen.MSPaintScreenProperties.EDIT_COLOUR
 import static microsoft.paint.project.screen.MSPaintScreenProperties.EDIT_COLOURS_DIALOG;
 import static microsoft.paint.project.screen.MSPaintScreenProperties.RED_GREEN_BLUE_EDIT_COLOURS_DIALOG;
 import static microsoft.paint.project.screen.MSPaintScreenProperties.PAINT_CAN;
+import static microsoft.paint.project.screen.MSPaintScreenProperties.PENCIL;
 import static microsoft.paint.project.screen.MSPaintScreenProperties.DRAW_AREA;
 import static microsoft.paint.project.screen.MSPaintScreenProperties.ZOOM_IN_BUTTON;
 
@@ -44,6 +45,10 @@ public class MSPaintScreen {
 	
 	public static Point getPaintCanButton() {
 		return new Point(PAINT_CAN.get(0).getX(), PAINT_CAN.get(0).getY());
+	}
+	
+	public static Point getPencilButton() {
+		return new Point(PENCIL.get(0).getX(), PENCIL.get(0).getY());
 	}
 	
 	public static List<Point> getRedGreenBlueColourPointsForCustomColourDialog() {

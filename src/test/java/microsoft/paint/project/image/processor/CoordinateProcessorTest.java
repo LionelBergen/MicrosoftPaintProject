@@ -2,9 +2,11 @@ package microsoft.paint.project.image.processor;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -89,7 +91,7 @@ public class CoordinateProcessorTest {
 	
 	@Test
 	public void testGetTopSide() {
-		List<ColourCoordinate> testCoords = new ArrayList<>();
+		Collection<ColourCoordinate> testCoords = new ArrayList<>();
 		testCoords.add(new ColourCoordinate(0, 0, 0, 5, 5));
 		testCoords.add(new ColourCoordinate(0, 0, 0, 6, 8));
 		testCoords.add(new ColourCoordinate(0, 0, 0, 7, 15));
@@ -99,12 +101,189 @@ public class CoordinateProcessorTest {
 		testCoords.add(new ColourCoordinate(0, 0, 0, 5, 8));
 		testCoords.add(new ColourCoordinate(0, 0, 0, 8, 5));
 		
-		Set<ColourCoordinate> results = CoordinateProcessor.getTopSide(testCoords);
+		Collection<ColourCoordinate> results = CoordinateProcessor.getTopSide(testCoords);
 		assertEquals(4, results.size());
 		
 		assertEquals(5, results.stream().filter(e -> e.getX() == 5).findAny().get().getY());
 		assertEquals(8, results.stream().filter(e -> e.getX() == 6).findAny().get().getY());
 		assertEquals(15, results.stream().filter(e -> e.getX() == 7).findAny().get().getY());
 		assertEquals(0, results.stream().filter(e -> e.getX() == 8).findAny().get().getY());
+		
+		// assert order. Should be from left -> right
+		Iterator<ColourCoordinate> resultsIter = results.iterator();
+		assertEquals(5, resultsIter.next().getX());
+		assertEquals(6, resultsIter.next().getX());
+		assertEquals(7, resultsIter.next().getX());
+		assertEquals(8, resultsIter.next().getX());
+	}
+	
+	@Test
+	public void testGetBottomSide() {
+		Collection<ColourCoordinate> testCoords = new ArrayList<>();
+		testCoords.add(new ColourCoordinate(0, 0, 0, 5, 5));
+		testCoords.add(new ColourCoordinate(0, 0, 0, 6, 8));
+		testCoords.add(new ColourCoordinate(0, 0, 0, 7, 15));
+		testCoords.add(new ColourCoordinate(0, 0, 0, 8, 0));
+		testCoords.add(new ColourCoordinate(0, 0, 0, 8, 5));
+		testCoords.add(new ColourCoordinate(0, 0, 0, 5, 6));
+		testCoords.add(new ColourCoordinate(0, 0, 0, 5, 7));
+		testCoords.add(new ColourCoordinate(0, 0, 0, 5, 8));
+		
+		Collection<ColourCoordinate> results = CoordinateProcessor.getBottomSide(testCoords);
+		assertEquals(4, results.size());
+		
+		assertEquals(8, results.stream().filter(e -> e.getX() == 5).findAny().get().getY());
+		assertEquals(8, results.stream().filter(e -> e.getX() == 6).findAny().get().getY());
+		assertEquals(15, results.stream().filter(e -> e.getX() == 7).findAny().get().getY());
+		assertEquals(5, results.stream().filter(e -> e.getX() == 8).findAny().get().getY());
+		
+		// assert order. Should be from left -> right
+		Iterator<ColourCoordinate> resultsIter = results.iterator();
+		assertEquals(5, resultsIter.next().getX());
+		assertEquals(6, resultsIter.next().getX());
+		assertEquals(7, resultsIter.next().getX());
+		assertEquals(8, resultsIter.next().getX());
+	}
+	
+	@Test
+	public void testGetLeftSide() {
+		Collection<ColourCoordinate> testCoords = new ArrayList<>();
+		testCoords.add(new ColourCoordinate(0, 0, 0, 8, 5));
+		testCoords.add(new ColourCoordinate(0, 0, 0, 5, 5));
+		testCoords.add(new ColourCoordinate(0, 0, 0, 5, 6));
+		testCoords.add(new ColourCoordinate(0, 0, 0, 5, 7));
+		testCoords.add(new ColourCoordinate(0, 0, 0, 5, 8));
+		testCoords.add(new ColourCoordinate(0, 0, 0, 10, 5));
+		testCoords.add(new ColourCoordinate(0, 0, 0, 10, 6));
+		testCoords.add(new ColourCoordinate(0, 0, 0, 10, 7));
+		
+		Collection<ColourCoordinate> results = CoordinateProcessor.getLeftSide(testCoords);
+		assertEquals(4, results.size());
+		
+		assertEquals(5, results.stream().filter(e -> e.getY() == 5).findAny().get().getX());
+		assertEquals(5, results.stream().filter(e -> e.getY() == 6).findAny().get().getX());
+		assertEquals(5, results.stream().filter(e -> e.getY() == 7).findAny().get().getX());
+		assertEquals(5, results.stream().filter(e -> e.getY() == 8).findAny().get().getX());
+		
+		// assert order. Should be from top -> bottom
+		Iterator<ColourCoordinate> resultsIter = results.iterator();
+		assertEquals(5, resultsIter.next().getY());
+		assertEquals(6, resultsIter.next().getY());
+		assertEquals(7, resultsIter.next().getY());
+		assertEquals(8, resultsIter.next().getY());
+	}
+	
+	@Test
+	public void testGetRightSide() {
+		Collection<ColourCoordinate> testCoords = new ArrayList<>();
+		testCoords.add(new ColourCoordinate(0, 0, 0, 8, 5));
+		testCoords.add(new ColourCoordinate(0, 0, 0, 15, 5));
+		testCoords.add(new ColourCoordinate(0, 0, 0, 15, 6));
+		testCoords.add(new ColourCoordinate(0, 0, 0, 15, 7));
+		testCoords.add(new ColourCoordinate(0, 0, 0, 15, 8));
+		testCoords.add(new ColourCoordinate(0, 0, 0, 10, 5));
+		testCoords.add(new ColourCoordinate(0, 0, 0, 10, 6));
+		testCoords.add(new ColourCoordinate(0, 0, 0, 10, 7));
+		
+		Collection<ColourCoordinate> results = CoordinateProcessor.getRightSide(testCoords);
+		assertEquals(4, results.size());
+		
+		assertEquals(15, results.stream().filter(e -> e.getY() == 5).findAny().get().getX());
+		assertEquals(15, results.stream().filter(e -> e.getY() == 6).findAny().get().getX());
+		assertEquals(15, results.stream().filter(e -> e.getY() == 7).findAny().get().getX());
+		assertEquals(15, results.stream().filter(e -> e.getY() == 8).findAny().get().getX());
+		
+		// assert order. Should be from top -> bottom
+		Iterator<ColourCoordinate> resultsIter = results.iterator();
+		assertEquals(5, resultsIter.next().getY());
+		assertEquals(6, resultsIter.next().getY());
+		assertEquals(7, resultsIter.next().getY());
+		assertEquals(8, resultsIter.next().getY());
+	}
+	
+	@Test
+	public void testRemoveMiddleCoordinates() {
+		List<ColourCoordinate> testCoords = new ArrayList<>();
+		testCoords.add(new ColourCoordinate(0, 0, 0, 1, 1));
+		testCoords.add(new ColourCoordinate(0, 0, 0, 2, 1));
+		testCoords.add(new ColourCoordinate(0, 0, 0, 3, 1));
+		testCoords.add(new ColourCoordinate(0, 0, 0, 4, 1));
+		testCoords.add(new ColourCoordinate(0, 0, 0, 5, 1));
+		testCoords.add(new ColourCoordinate(0, 0, 0, 8, 1));
+		testCoords.add(new ColourCoordinate(0, 0, 0, 8, 2));
+		testCoords.add(new ColourCoordinate(0, 0, 0, 8, 3));
+		testCoords.add(new ColourCoordinate(0, 0, 0, 8, 4));
+		testCoords.add(new ColourCoordinate(0, 0, 0, 8, 5));
+		
+		List<ColourCoordinate> results = CoordinateProcessor.removeMiddleCoordinates(testCoords);
+		// assert left->right kept
+		assertTrue(results.contains(testCoords.get(0)));
+		assertTrue(results.contains(testCoords.get(4)));
+		
+		// assert top->bottom kept
+		assertTrue(results.contains(testCoords.get(5)));
+		assertTrue(results.contains(testCoords.get(9)));
+		
+		// assert deleted
+		assertEquals(4, results.size());
+		
+		// Ensure we didn't modify the original list
+		assertEquals(10, testCoords.size());
+	}
+	
+	// Ensure we don't depend on the order of the list
+	@Test
+	public void testRemoveMiddleCoordinatesAnyOrder() {
+		List<ColourCoordinate> testCoords = new ArrayList<>();
+		testCoords.add(new ColourCoordinate(0, 0, 0, 7, 1));
+		testCoords.add(new ColourCoordinate(0, 0, 0, 3, 1));
+		testCoords.add(new ColourCoordinate(0, 0, 0, 5, 1));
+		testCoords.add(new ColourCoordinate(0, 0, 0, 6, 1));
+		testCoords.add(new ColourCoordinate(0, 0, 0, 9, 1));
+		testCoords.add(new ColourCoordinate(0, 0, 0, 5, 1));
+		testCoords.add(new ColourCoordinate(0, 0, 0, 4, 1));
+		testCoords.add(new ColourCoordinate(0, 0, 0, 2, 1));
+		testCoords.add(new ColourCoordinate(0, 0, 0, 8, 1));
+		testCoords.add(new ColourCoordinate(0, 0, 0, 1, 1));
+		
+		List<ColourCoordinate> results = CoordinateProcessor.removeMiddleCoordinates(testCoords);
+		assertTrue(results.contains(testCoords.get(4)));
+		assertTrue(results.contains(testCoords.get(9)));
+		assertEquals(2, results.size());
+		
+		// Ensure we didn't modify the original list
+		assertEquals(10, testCoords.size());
+	}
+	
+	@Test
+	public void testRemoveMiddleCoordinatesEmpty() {
+		List<ColourCoordinate> testCoords = new ArrayList<>();
+		
+		List<ColourCoordinate> results = CoordinateProcessor.removeMiddleCoordinates(testCoords);
+		assertNotNull(results);
+		assertTrue(results.isEmpty());
+	}
+	
+	@Test
+	public void testRemoveMiddleCoordinatesSingleCoord() {
+		List<ColourCoordinate> testCoords = new ArrayList<>();
+		testCoords.add(new ColourCoordinate(0, 0, 0, 1, 1));
+		
+		List<ColourCoordinate> results = CoordinateProcessor.removeMiddleCoordinates(testCoords);
+		assertTrue(results.contains(testCoords.get(0)));
+		assertEquals(1, results.size());
+	}
+	
+	@Test
+	public void testRemoveMiddleCoordinatesNoneFiltered() {
+		List<ColourCoordinate> testCoords = new ArrayList<>();
+		testCoords.add(new ColourCoordinate(0, 0, 0, 1, 1));
+		testCoords.add(new ColourCoordinate(0, 0, 0, 3, 1));
+		testCoords.add(new ColourCoordinate(0, 0, 0, 5, 1));
+		testCoords.add(new ColourCoordinate(0, 0, 0, 5, 3));
+		testCoords.add(new ColourCoordinate(0, 0, 0, 5, 5));
+		
+		List<ColourCoordinate> results = CoordinateProcessor.removeMiddleCoordinates(testCoords);
+		assertEquals(testCoords.size(), results.size());
 	}
 }
