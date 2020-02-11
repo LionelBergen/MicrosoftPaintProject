@@ -4,6 +4,7 @@ import java.awt.Point;
 import java.util.Arrays;
 import java.util.List;
 
+import microsoft.paint.project.component.Colour;
 import microsoft.paint.project.component.ColourCoordinate;
 
 public class MSPaintScreenProperties {
@@ -11,6 +12,8 @@ public class MSPaintScreenProperties {
 	
 	static final Point DRAW_AREA = new Point(4, 144);
 	static final Point ZOOM_IN_BUTTON = new Point(2546, 1383);
+	
+	public static final Colour DEFAULT_COLOUR = new Colour(245, 246, 247);
 	
 	static final List<ColourCoordinate> PALETTE = Arrays.asList(
 			new ColourCoordinate(0, 0, 0, 728, 57),
@@ -22,7 +25,7 @@ public class MSPaintScreenProperties {
 			new ColourCoordinate(34, 177, 76, 861, 60),
 			new ColourCoordinate(0, 162, 232, 879, 60),
 			new ColourCoordinate(63, 72, 204, 899, 60),
-			new ColourCoordinate(245, 246, 247, 750, 136),
+			new ColourCoordinate(DEFAULT_COLOUR, 750, 136),
 			new ColourCoordinate(255, 255, 255, 729, 89),
 			new ColourCoordinate(255, 255, 255, 729, 86),
 			new ColourCoordinate(255, 255, 255, 729, 86),

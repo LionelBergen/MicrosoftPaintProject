@@ -15,7 +15,7 @@ import java.util.List;
  */
 public class Autobot extends Robot {
 	// Used for releasing a key after being pressed
-	private static final int MS_DELAY = 50;
+	private static final int MS_DELAY = 20;
 	
 	// parallel lists to map a KeyEvent to a Char
 	private static final List<Character> CHARACTERS = Arrays.asList('1', '2', '3', '4', '5', '6', '7', '8', '9', '0');
@@ -72,8 +72,20 @@ public class Autobot extends Robot {
 	
 	public void mouseClick(int x, int y) {
 		mouseMove(x, y);
-		delay(50);
+		delay(50); // TODO: 20 does not work here...
 		mouseClick();
+	}
+	
+	public void mousePress(int x, int y) {
+		mouseMove(x, y);
+		delay(MS_DELAY);
+		mousePress(InputEvent.BUTTON1_DOWN_MASK);
+	}
+	
+	public void mouseRelease(int x, int y) {
+		mouseMove(x, y);
+		delay(MS_DELAY);
+		mouseRelease(InputEvent.BUTTON1_DOWN_MASK);
 	}
 	
 	public void mouseClick(Point point) {

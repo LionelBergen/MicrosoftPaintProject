@@ -4,9 +4,9 @@ import java.awt.Point;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -23,16 +23,29 @@ import javax.imageio.ImageIO;
 import microsoft.paint.project.automate.Autobot;
 import microsoft.paint.project.component.Colour;
 import microsoft.paint.project.component.ColourCoordinate;
+import microsoft.paint.project.component.Cursor;
+import microsoft.paint.project.coordinate.processor.GrahamScan;
+import microsoft.paint.project.coordinate.processor.GrahamScanResult;
 import microsoft.paint.project.image.processor.CoordinateProcessor;
+import microsoft.paint.project.image.processor.Helper;
 import microsoft.paint.project.image.processor.ImageProcessor;
 import microsoft.paint.project.screen.MSPaintScreen;
+import microsoft.paint.project.screen.MSPaintScreenProperties;
 
 public class MicrosoftPaintProject {
+	private static Date startTime = new Date();
+	private static final long SECONDS_PAUSE_EVERY = 50L;
+	
+	private static final int CANVAS_START_X = 5;
+	private static final int CANVAS_START_Y = 143;
+	private static final double CANVAS_NORMALIZE = 2.631578947368421;
+	
+	private static Cursor currentPaintCursor = Cursor.BRUSH;
+	
 	public static void main(String[] args) throws Exception {
 		Process process = new ProcessBuilder("MSPaint").start();
 		
 		final Autobot robot = new Autobot();
-
 		// MSPaint will be open after this while loop finishes
 		while (!MSPaintScreen.isMSPaintOpen(robot)) {
 			TimeUnit.SECONDS.sleep(2);
@@ -44,53 +57,23 @@ public class MicrosoftPaintProject {
 		System.out.println("Image width: " + testImage.getWidth());
 		System.out.println("Image height: " + testImage.getHeight());
 		
-		enterPaintScreenSize(robot, testImage.getWidth(), testImage.getHeight());
+		// enterPaintScreenSize(robot, testImage.getWidth(), testImage.getHeight());
 		
 		// Get all colours from the image
-		Set<ColourCoordinate> colourCoords = new HashSet<ColourCoordinate>();
-		for(int x=0; x<testImage.getWidth(); x++) {
-			for (int y=0; y<testImage.getHeight(); y++) {
-				colourCoords.add(new ColourCoordinate(ImageProcessor.GetColourFromImage(testImage, x, y), x, y));
-			}
-		}
-		System.out.println(colourCoords.stream().map(e -> e.getColour()).distinct().count());
-		
-		// Replace colours with ones from our default palette where possible
-		for (ColourCoordinate colourCoord : colourCoords) {
-			Colour fromPallet = MSPaintScreen.getColourFromPallet(colourCoord.getColour());
-			
-			if (fromPallet != null) {
-				colourCoord.setColour(fromPallet);
-			}
-		}
-		System.out.println(colourCoords.stream().map(e -> e.getColour()).distinct().count());
+		Set<ColourCoordinate> colourCoords = Helper.GetUniqueColoursFromImage(testImage);
 		
 		// Replace colours with other ones that are similar
-		for (ColourCoordinate colourCoord : colourCoords) {
-			Colour colourToReplaceWith = findSimilair(colourCoord, colourCoords);
-			
-			if (colourToReplaceWith != null) {
-				colourCoord.setColour(colourToReplaceWith);
-			}
-		}
+		Helper.SimplifyColourCoordinates(colourCoords);
+		
+		Helper.ReplaceColoursWithOnesFromPallet(colourCoords);
 		
 		// Get a list of unique colours and count the number of times that colour is used in our image
-		List<Colour> uniqueColours = colourCoords.stream().map(e -> e.getColour()).distinct().collect(Collectors.toList());
-		Map<Colour, Integer> coloursWithCount = new HashMap<Colour, Integer>();
-		
-		for (Colour colourCoord : uniqueColours) {
-			coloursWithCount.put(colourCoord, Integer.valueOf(String.valueOf(colourCoords.stream().filter(e -> e.getColour().equals(colourCoord)).count())));
-		}
-		
-		coloursWithCount = coloursWithCount.entrySet().stream()
-			    .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()))
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
-		
+		Map<Colour, Integer> coloursWithCount = Helper.GetColoursWithOccurances(colourCoords);
+
 		for (Entry<Colour, Integer> y : coloursWithCount.entrySet()) {
 			System.out.println("key: " + y.getKey() + " value: " + y.getValue());
 		}
-
-		System.out.println(coloursWithCount.size());
+		System.out.println("Number of colours after merging: " + coloursWithCount.size());
 		
 		// Zoom in 3 times. This will make it so our coordinates match up with each pixel. For example, X 100 Y 100 will be pixel 100 100
 		robot.mouseClick(MSPaintScreen.getZoomInButton());
@@ -102,106 +85,159 @@ public class MicrosoftPaintProject {
 		Iterator<Colour> coloursFromSet = coloursWithCount.keySet().iterator();
 		Colour firstColour = coloursFromSet.next();
 		
-		// fill the screen with the most common colour
-		enterCustomColour(robot, firstColour);
-		robot.mouseClick(MSPaintScreen.getPaintCanButton());
-		robot.delay(50);
-		robot.mouseClick(MSPaintScreen.getDrawArea());
+		// Fill if the default colour is not the first colour
+		if (!MSPaintScreenProperties.DEFAULT_COLOUR.equals(firstColour)) {
+			// fill the screen with the most common colour
+			enterColour(robot, firstColour);
+			robot.mouseClick(MSPaintScreen.getPaintCanButton());
+			robot.delay(50);
+			robot.mouseClick(MSPaintScreen.getDrawArea());
+		} else {
+			System.out.println("default colour used. No need to fill screen");
+		}
 		
 		// remove it from our list since it's been painted
 		coloursWithCount.remove(firstColour);
 		
 		coloursFromSet = coloursWithCount.keySet().iterator();
 
+		startTime = new Date();
+		
 		// for each colour, draw it
 		while (coloursFromSet.hasNext()) {
 			final Colour colour = coloursFromSet.next();
 			drawColour(robot, colour, colourCoords);
-			
-			return;
 		}
 	}
 	
 	private static void drawColour(Autobot robot, Colour colourToDraw, Set<ColourCoordinate> fullColourList) {
-		// TODO: pencil
-		enterCustomColour(robot, colourToDraw);
-		robot.mouseClick(MSPaintScreen.getPencilButton());
-		robot.delay(50);
+		System.out.println("Drawing colour: " + colourToDraw);
+		enterColour(robot, colourToDraw);
 		
 		// Get all Coordinates that match the colour:
 		Set<ColourCoordinate> colourCoords = fullColourList.stream().filter(e -> e.getColour().equals(colourToDraw)).collect(Collectors.toSet());
+		System.out.println("got colour coords");
 		
 		// Split the coordinates into groups that are 'touching'
 		Set<Set<ColourCoordinate>> splitCoords = CoordinateProcessor.getTouchingCoordinates(colourCoords);
+		System.out.println("got split coords");
 		
 		// draw the outline of each & fill
 		for (Set<ColourCoordinate> coords : splitCoords) {
-			int i = 0;
-			// top bottom left right
-			for (Collection<ColourCoordinate> side : CoordinateProcessor.getAllSides(coords)) {
-				side = CoordinateProcessor.removeMiddleCoordinates(side);
-				// TODO: remove this crappy debugging statement
-				switch(i) {
-				case 0:
-					System.out.println("drawing top");
-					break;
-				case 1:
-					System.out.println("drawing bottom");
-					break;
-				case 2:
-					System.out.println("drawing left");
-					break;
-				case 3:
-					System.out.println("drawing right");
-					break;
-				}
-				for (ColourCoordinate cc : side) {
-					robot.mouseClick(5 + cc.getX(), 143 + cc.getY());
-					robot.delay(50);
+			System.out.println("processing: " + coords.size() + " coords");
+			
+			if(coords.size() < 3) {
+				continue;
+			}
+			
+			// Get the outer coordinates:
+			GrahamScanResult grahamScan = GrahamScan.getConvexHull(coords);
+			List<ColourCoordinate> outerCoords = grahamScan.getResults();
+			
+			if (outerCoords == null) {
+				continue;
+			}
+			
+			changeCursor(robot, Cursor.PENCIL);
+			
+			// draw the outer coordinates
+			for (int i = 0; i < outerCoords.size(); i++) {
+				ColourCoordinate coord = outerCoords.get(i);
+				
+				if (i ==0) {
+					mousePress(robot, coord.getX(), coord.getY());
+				} else if (i == outerCoords.size() - 1) {
+					// go to last coordinate
+					mouseMove(robot, coord.getX(), coord.getY());
+					
+					// go back to the first coordinate and release
+					mouseRelease(robot, outerCoords.get(0).getX(), outerCoords.get(0).getY());
+				} else {
+					mouseMove(robot, coord.getX(), coord.getY());
 				}
 				
-				i++;
+				robot.delay(50);
 			}
+			
+			//changeCursor(robot, Cursor.FILL_BUCKET);
+			//mouseClick(robot, outerCoords.get(0).getX() + 2, outerCoords.get(0).getY() + 2);
 		}
 	}
 	
-	private static Colour findSimilair(ColourCoordinate colourCoord, Collection<ColourCoordinate> colourCoords) {
-		for (ColourCoordinate otherColourCoord : colourCoords) {
-			if (colourCoord != otherColourCoord && otherColourCoord.getColour().similairTo(colourCoord.getColour())) {
-				return otherColourCoord.getColour();
+	private static void changeCursor(Autobot robot, Cursor newCursor) {
+		if (currentPaintCursor != newCursor) {
+			switch (newCursor) {
+				case PENCIL:
+					robot.mouseClick(MSPaintScreen.getPencilButton());
+					break;
+				case FILL_BUCKET:
+					robot.mouseClick(MSPaintScreen.getPaintCanButton());
+					break;
+				default:
+					throw new RuntimeException("Unknown cursor type: " + newCursor);
 			}
+			
+			currentPaintCursor = newCursor;
+			robot.delay(50);
 		}
-		
-		return null;
 	}
 	
-	private static void enterCustomColour(Autobot robot, Colour colour) {
-		while (!MSPaintScreen.isCustomColourPromptOpen(robot)) {
-			robot.mouseClick(MSPaintScreen.getEditColoursButton());
-			robot.delay(2000);
+	private static void mouseMove(Autobot robot, int x, int y) {
+		x *= CANVAS_NORMALIZE;
+		y *= CANVAS_NORMALIZE;
+		robot.mouseMove(CANVAS_START_X + x, CANVAS_START_Y + y);
+	}
+	
+	private static void mousePress(Autobot robot, int x, int y) {
+		x *= CANVAS_NORMALIZE;
+		y *= CANVAS_NORMALIZE;
+		robot.mousePress(CANVAS_START_X + x, CANVAS_START_Y + y);
+	}
+	
+	private static void mouseRelease(Autobot robot, int x, int y) {
+		x *= CANVAS_NORMALIZE;
+		y *= CANVAS_NORMALIZE;
+		robot.mouseRelease(CANVAS_START_X + x, CANVAS_START_Y + y);
+	}
+	
+	private static void mouseClick(Autobot robot, int x, int y) {
+		x *= CANVAS_NORMALIZE;
+		y *= CANVAS_NORMALIZE;
+		robot.mouseClick(CANVAS_START_X + x, CANVAS_START_Y + y);
+	}
+	
+	private static void enterColour(Autobot robot, Colour colour) {
+		ColourCoordinate colourFromPallet = MSPaintScreen.getColourFromPallet(colour, true);
+		if (colourFromPallet != null) {
+			robot.mouseClick(colourFromPallet.getX(), colourFromPallet.getY());
+		} else {
+			while (!MSPaintScreen.isCustomColourPromptOpen(robot)) {
+				robot.mouseClick(MSPaintScreen.getEditColoursButton());
+				robot.delay(2000);
+			}
+			
+			List<Point> RGB_INPUTS = MSPaintScreen.getRedGreenBlueColourPointsForCustomColourDialog();
+			
+			// Red
+			robot.mouseDoubleClick(RGB_INPUTS.get(0));
+			robot.delay(50);
+			robot.enterKeys(colour.getRed());
+			robot.delay(50);
+			
+			// Green
+			robot.mouseDoubleClick(RGB_INPUTS.get(1));
+			robot.delay(50);
+			robot.enterKeys(colour.getGreen());
+			robot.delay(50);
+			
+			// Blue
+			robot.mouseDoubleClick(RGB_INPUTS.get(2));
+			robot.delay(50);
+			robot.enterKeys(colour.getBlue());
+			robot.delay(50);
+			
+			robot.keyPress(KeyEvent.VK_ENTER);
 		}
-		
-		List<Point> RGB_INPUTS = MSPaintScreen.getRedGreenBlueColourPointsForCustomColourDialog();
-		
-		// Red
-		robot.mouseDoubleClick(RGB_INPUTS.get(0));
-		robot.delay(50);
-		robot.enterKeys(colour.getRed());
-		robot.delay(50);
-		
-		// Green
-		robot.mouseDoubleClick(RGB_INPUTS.get(1));
-		robot.delay(50);
-		robot.enterKeys(colour.getGreen());
-		robot.delay(50);
-		
-		// Blue
-		robot.mouseDoubleClick(RGB_INPUTS.get(2));
-		robot.delay(50);
-		robot.enterKeys(colour.getBlue());
-		robot.delay(50);
-		
-		robot.keyPress(KeyEvent.VK_ENTER);
 	}
 	
 	private static void enterPaintScreenSize(Autobot robot, int width, int height) {

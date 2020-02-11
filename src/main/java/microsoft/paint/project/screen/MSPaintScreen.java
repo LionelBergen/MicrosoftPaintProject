@@ -55,10 +55,16 @@ public class MSPaintScreen {
 		return RED_GREEN_BLUE_EDIT_COLOURS_DIALOG.stream().map(e -> new Point(e.getX(), e.getY())).collect(Collectors.toList());
 	}
 	
-	public static Colour getColourFromPallet(Colour colourToMatch) {
+	public static ColourCoordinate getColourFromPallet(Colour colourToMatch) {
+		return getColourFromPallet(colourToMatch, false);
+	}
+	
+	public static ColourCoordinate getColourFromPallet(Colour colourToMatch, boolean exactMatch) {
 		for (ColourCoordinate colourCoord : PALETTE) {
-			if (colourCoord.getColour().similairTo(colourToMatch)) {
-				return colourCoord.getColour();
+			if (!exactMatch && colourCoord.getColour().similairTo(colourToMatch)) {
+				return colourCoord;
+			} else if (exactMatch && colourCoord.getColour().equals(colourToMatch)) {
+				return colourCoord; 
 			}
 		}
 		

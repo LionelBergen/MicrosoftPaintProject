@@ -5,16 +5,25 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
+
+import javax.imageio.ImageIO;
 
 import org.junit.Test;
 
 import microsoft.paint.project.component.Colour;
 import microsoft.paint.project.component.ColourCoordinate;
+import microsoft.paint.project.screen.MSPaintScreen;
 
 public class CoordinateProcessorTest {
 	@Test
@@ -285,5 +294,33 @@ public class CoordinateProcessorTest {
 		
 		List<ColourCoordinate> results = CoordinateProcessor.removeMiddleCoordinates(testCoords);
 		assertEquals(testCoords.size(), results.size());
+	}
+	
+	@Test
+	public void testGetOutermostCoordinates() throws Exception {
+		File testFile = new File("C:\\Users\\Lionel\\Desktop\\redditstuff\\MicrosoftPaintProject\\stuff\\testimage.jpg");
+		BufferedImage testImage = ImageIO.read(testFile);
+		
+		Collection<ColourCoordinate> colourCoords = Helper.GetUniqueColoursFromImage(testImage);
+		Helper.SimplifyColourCoordinates(colourCoords);
+		Colour blackColour = Helper.GetColoursWithOccurances(colourCoords).keySet().stream().collect(Collectors.toList()).get(1);
+		
+		// Get all Coordinates that match the colour:
+		colourCoords = colourCoords.stream().filter(e -> e.getColour().equals(blackColour)).collect(Collectors.toSet());
+		
+		// Split the coordinates into groups that are 'touching'
+		Set<Set<ColourCoordinate>> splitCoords = CoordinateProcessor.getTouchingCoordinates(colourCoords);
+		
+		assertEquals(1, splitCoords.size());
+		
+		colourCoords = splitCoords.iterator().next();
+		assertEquals(0, colourCoords.iterator().next().getColour().getBlue());
+		assertEquals(1030, colourCoords.size());
+		
+		colourCoords = CoordinateProcessor.getOutermostCoordinates(colourCoords);
+		
+		assertEquals(42, colourCoords.size());
+		
+		
 	}
 }

@@ -9,7 +9,7 @@ import java.awt.Color;
  * @author Lionel Bergen
  */
 public class Colour {
-	private static final double MAX_DISTANCE = 500.0;
+	private static final double MAX_DISTANCE = 1000.0; //9950.0;
 	private final Color color;
 	
 	public Colour(int red, int green, int blue) {
@@ -43,6 +43,11 @@ public class Colour {
     
 		return distance <= maxDistance;
 	}
+	
+	@Override
+	public int hashCode() {
+        return this.color.hashCode();
+    }
 	
 	@Override
 	public boolean equals(Object other) {

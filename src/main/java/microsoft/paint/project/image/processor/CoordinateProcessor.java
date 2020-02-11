@@ -3,13 +3,17 @@ package microsoft.paint.project.image.processor;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.Stack;
 import java.util.stream.Collectors;
 
 import microsoft.paint.project.component.ColourCoordinate;
+import microsoft.paint.project.component.Coordinate;
+import microsoft.paint.project.coordinate.processor.GrahamScan;
 
 // TODO: rename this class
 public class CoordinateProcessor {
@@ -84,6 +88,17 @@ public class CoordinateProcessor {
 		}
 		
 		return results;
+	}
+	
+	/**
+	 * Returns the polar angle of p0, p1, and p2.
+	 * 
+	 * @return	the cross-product polar angle of p0, p1, and p2
+	 */
+	private static double polarAngle(ColourCoordinate p0, ColourCoordinate p1, ColourCoordinate p2) {
+		//(p1 - p0) * (p2 - p0) = (x1 - x0)(y2 - y0) - (x2 - x0)(y1 - y0)
+		//If this cross product is positive, then p0p1 is clockwise from p0p2; if negative, it is counter-clockwise.
+		return (p1.getX() - p0.getX()) * (p2.getY() - p0.getY()) - (p2.getX() - p0.getX()) * (p1.getY() - p0.getY());
 	}
 	
 	private static List<ColourCoordinate> getCoordinateBetween(Collection<ColourCoordinate> coordinatesList, ColourCoordinate coord1, ColourCoordinate coord2) {
