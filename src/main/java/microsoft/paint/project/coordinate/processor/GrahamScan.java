@@ -23,6 +23,9 @@ public class GrahamScan {
         List<ColourCoordinate> sorted = new ArrayList<>(getSortedPointSet(points));
         
         GrahamScanResult result = new GrahamScanResult();
+        // these may be overriden later
+        result.setResults(sorted);
+    	result.setResultType(GrahamScanResultType.OK);
 
         if(sorted.size() < 3) {
         	result.setResultType(GrahamScanResultType.LESS_THAN_3_POINTS);

@@ -4,6 +4,7 @@ import java.awt.Point;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -20,12 +21,17 @@ import java.util.stream.Collectors;
 
 import javax.imageio.ImageIO;
 
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
+
 import microsoft.paint.project.automate.Autobot;
 import microsoft.paint.project.component.Colour;
 import microsoft.paint.project.component.ColourCoordinate;
 import microsoft.paint.project.component.Cursor;
 import microsoft.paint.project.coordinate.processor.GrahamScan;
+import microsoft.paint.project.coordinate.processor.GrahamScanComparator;
 import microsoft.paint.project.coordinate.processor.GrahamScanResult;
+import microsoft.paint.project.coordinate.processor.GrahamScanResultType;
 import microsoft.paint.project.image.processor.CoordinateProcessor;
 import microsoft.paint.project.image.processor.Helper;
 import microsoft.paint.project.image.processor.ImageProcessor;
@@ -51,7 +57,7 @@ public class MicrosoftPaintProject {
 			TimeUnit.SECONDS.sleep(2);
 		}
 
-		File testFile = new File("C:\\Users\\Lionel\\Desktop\\redditstuff\\MicrosoftPaintProject\\stuff\\testimage.jpg");
+		File testFile = new File("C:\\Users\\Lionel\\Desktop\\redditstuff\\MicrosoftPaintProject\\stuff\\testimage.png");
 		BufferedImage testImage = ImageIO.read(testFile);
 		
 		System.out.println("Image width: " + testImage.getWidth());
@@ -76,14 +82,13 @@ public class MicrosoftPaintProject {
 		System.out.println("Number of colours after merging: " + coloursWithCount.size());
 		
 		// Zoom in 3 times. This will make it so our coordinates match up with each pixel. For example, X 100 Y 100 will be pixel 100 100
-		robot.mouseClick(MSPaintScreen.getZoomInButton());
-		robot.delay(50);
-		robot.mouseClick(MSPaintScreen.getZoomInButton());
-		robot.delay(50);
-		robot.mouseClick(MSPaintScreen.getZoomInButton());
+		zoomIn(robot);
 		
 		Iterator<Colour> coloursFromSet = coloursWithCount.keySet().iterator();
 		Colour firstColour = coloursFromSet.next();
+		
+		// remove it from our list since it will be painted as a fill (Like a background colour)
+		coloursWithCount.remove(firstColour);
 		
 		// Fill if the default colour is not the first colour
 		if (!MSPaintScreenProperties.DEFAULT_COLOUR.equals(firstColour)) {
@@ -96,71 +101,74 @@ public class MicrosoftPaintProject {
 			System.out.println("default colour used. No need to fill screen");
 		}
 		
-		// remove it from our list since it's been painted
-		coloursWithCount.remove(firstColour);
-		
 		coloursFromSet = coloursWithCount.keySet().iterator();
 
 		startTime = new Date();
 		
+		Multimap<Colour, Set<ColourCoordinate>> colourGroups = ArrayListMultimap.create();
+		
 		// for each colour, draw it
 		while (coloursFromSet.hasNext()) {
 			final Colour colour = coloursFromSet.next();
-			drawColour(robot, colour, colourCoords);
+			
+			// Get all Coordinates that match the colour:
+			Set<ColourCoordinate> coordinatesMatchingColour = colourCoords.stream().filter(e -> e.getColour().equals(colour)).collect(Collectors.toSet());
+			
+			// Split the coordinates into groups that are 'touching'
+			Set<Set<ColourCoordinate>> colourGroup = CoordinateProcessor.getTouchingCoordinates(coordinatesMatchingColour);
+			
+			for (Set<ColourCoordinate> grouping : colourGroup) {
+				colourGroups.put(colour, grouping);
+			}
+		}
+		
+		List<GrahamScanResult> results = new ArrayList<>();
+		
+		for (Entry<Colour, Set<ColourCoordinate>> entry : colourGroups.entries()) {
+			GrahamScanResult grahamScan = GrahamScan.getConvexHull(entry.getValue());
+			grahamScan.setColour(entry.getKey());
+			
+			results.add(grahamScan);
+		}
+		
+		// Put the "invalid" ones last, then sorts by smallest -> largest
+		results = results.stream().sorted(new GrahamScanComparator()).collect(Collectors.toList());
+		
+		for (GrahamScanResult result : results) {
+			drawColour(robot, result);
 		}
 	}
-	
-	private static void drawColour(Autobot robot, Colour colourToDraw, Set<ColourCoordinate> fullColourList) {
-		System.out.println("Drawing colour: " + colourToDraw);
-		enterColour(robot, colourToDraw);
+
+	private static void drawColour(Autobot robot, GrahamScanResult grahamScanResult) {
+		System.out.println("Drawing colour: " + grahamScanResult.getColour());
+		enterColour(robot, grahamScanResult.getColour());
 		
-		// Get all Coordinates that match the colour:
-		Set<ColourCoordinate> colourCoords = fullColourList.stream().filter(e -> e.getColour().equals(colourToDraw)).collect(Collectors.toSet());
-		System.out.println("got colour coords");
-		
-		// Split the coordinates into groups that are 'touching'
-		Set<Set<ColourCoordinate>> splitCoords = CoordinateProcessor.getTouchingCoordinates(colourCoords);
-		System.out.println("got split coords");
-		
-		// draw the outline of each & fill
-		for (Set<ColourCoordinate> coords : splitCoords) {
-			System.out.println("processing: " + coords.size() + " coords");
-			
-			if(coords.size() < 3) {
-				continue;
-			}
-			
-			// Get the outer coordinates:
-			GrahamScanResult grahamScan = GrahamScan.getConvexHull(coords);
-			List<ColourCoordinate> outerCoords = grahamScan.getResults();
-			
-			if (outerCoords == null) {
-				continue;
-			}
-			
+		if (grahamScanResult.getResultType() == GrahamScanResultType.OK) {
+			// draw the outline fill
+			System.out.println("processing: " + grahamScanResult.getResults().size() + " coords");
 			changeCursor(robot, Cursor.PENCIL);
-			
+				
 			// draw the outer coordinates
-			for (int i = 0; i < outerCoords.size(); i++) {
-				ColourCoordinate coord = outerCoords.get(i);
+			for (int i = 0; i < grahamScanResult.getResults().size(); i++) {
+				ColourCoordinate coord = grahamScanResult.getResults().get(i);
 				
 				if (i ==0) {
 					mousePress(robot, coord.getX(), coord.getY());
-				} else if (i == outerCoords.size() - 1) {
+				} else if (i == grahamScanResult.getResults().size() - 1) {
 					// go to last coordinate
 					mouseMove(robot, coord.getX(), coord.getY());
 					
 					// go back to the first coordinate and release
-					mouseRelease(robot, outerCoords.get(0).getX(), outerCoords.get(0).getY());
+					mouseRelease(robot, grahamScanResult.getResults().get(0).getX(), grahamScanResult.getResults().get(0).getY());
 				} else {
 					mouseMove(robot, coord.getX(), coord.getY());
 				}
 				
 				robot.delay(50);
 			}
-			
+				
 			//changeCursor(robot, Cursor.FILL_BUCKET);
-			//mouseClick(robot, outerCoords.get(0).getX() + 2, outerCoords.get(0).getY() + 2);
+			//mouseClick(robot, grahamScanResult.getResults().get(0).getX() + 1, grahamScanResult.getResults().get(0).getY() + 1);
 		}
 	}
 	
@@ -255,5 +263,13 @@ public class MicrosoftPaintProject {
 		robot.enterKeys(height);
 		robot.delay(200);
 		robot.pressAndReleaseKey(KeyEvent.VK_ENTER);
+	}
+	
+	private static void zoomIn(Autobot robot) {
+		robot.mouseClick(MSPaintScreen.getZoomInButton());
+		robot.delay(50);
+		robot.mouseClick(MSPaintScreen.getZoomInButton());
+		robot.delay(50);
+		robot.mouseClick(MSPaintScreen.getZoomInButton());
 	}
 }
