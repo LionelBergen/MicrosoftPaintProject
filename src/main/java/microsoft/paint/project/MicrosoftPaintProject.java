@@ -57,7 +57,7 @@ public class MicrosoftPaintProject {
 			TimeUnit.SECONDS.sleep(2);
 		}
 
-		File testFile = new File("C:\\Users\\Lionel\\Desktop\\redditstuff\\MicrosoftPaintProject\\stuff\\testimage.png");
+		File testFile = new File("C:\\Users\\Lionel\\Desktop\\MicrosoftPaintProject\\stuff\\testimage.png");
 		BufferedImage testImage = ImageIO.read(testFile);
 		
 		System.out.println("Image width: " + testImage.getWidth());
