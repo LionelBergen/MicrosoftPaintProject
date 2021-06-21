@@ -1,3 +1,13 @@
-/main/
-/test/
-/default/
+# Ignore Gradle project-specific cache directory
+.gradle
+
+# Ignore Gradle build output directory
+build
+
+# Ignore Eclipse files
+.classpath
+.settings/*
+/.gitignore
+/.project
+/.settings/
+/OLD_project/

@@ -7,3 +7,4 @@ build
 # Ignore Eclipse files
 .classpath
 .settings/*
+bin/*
