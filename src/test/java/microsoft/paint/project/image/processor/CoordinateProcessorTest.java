@@ -296,6 +296,7 @@ public class CoordinateProcessorTest {
 		assertEquals(testCoords.size(), results.size());
 	}
 	
+	// TODO: No idea
 	@Test
 	public void testGetOutermostCoordinates() throws Exception {
 		File testFile = new File("C:\\Users\\Lionel\\Desktop\\redditstuff\\MicrosoftPaintProject\\stuff\\testimage.jpg");
@@ -317,7 +318,7 @@ public class CoordinateProcessorTest {
 		assertEquals(0, colourCoords.iterator().next().getColour().getBlue());
 		assertEquals(1030, colourCoords.size());
 		
-		colourCoords = CoordinateProcessor.getOutermostCoordinates(colourCoords);
+		// colourCoords = CoordinateProcessor.getOutermostCoordinates(colourCoords);
 		
 		assertEquals(42, colourCoords.size());
 		
